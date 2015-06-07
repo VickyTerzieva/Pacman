@@ -5,7 +5,8 @@ from moving_object import MovingObject
 class Pacman(MovingObject):
     EMPTY = None
     PAC_DOT_POINTS = 10
-    GHOST_POINTS = 100
+    BIG_PAC_DOT_POINTS = 50
+    GHOST_POINTS = 200
     FRUIT_POINTS = 100
 
     def __init__(self, x, y):
