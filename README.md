@@ -1,3 +1,3 @@
 # Pacman
 
-The project repsresents the classical Pacman game - player, oponents(ghosts) etc. 
+The project repsresents the classic Pacman game.
