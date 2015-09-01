@@ -53,7 +53,13 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.move()
 
     def move(self):
-        if self.front_blocked() is True:
+        front = self.front()
+
+        if (front[0] < 21 or front[0] > 430) \
+                and (front[1] < 246 or front[1] > 220):
+            self.teleport()
+
+        if self.front_blocked(front) is True:
             return
 
         if self.direction == Direction.UP:
@@ -91,8 +97,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         elif self.direction == Direction.RIGHT:
             return [self.x() + STEP, self.y()]
 
-    def front_blocked(self):
-        front = self.front()
+    def front_blocked(self, front):
         if front[0] < 21 or front[0] > 430 or front[1] < 13 or front[1] > 465:
             return True
         return blocks[int(front[0])][int(front[1])]
@@ -163,3 +168,16 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         elif self.direction == Direction.RIGHT:
             name = "./resources/images/pacman_right.png"
             self.setPixmap(QtGui.QPixmap(name))
+
+    def teleport(self):
+        if self.x() < -20:
+            self.setPos(466, self.y())
+        elif self.x() > 476:
+            self.setPos(-10, self.y())
+        elif self.direction == Direction.LEFT:
+            self.setPos(self.x() - STEP, self.y())
+        elif self.direction == Direction.RIGHT:
+            self.setPos(self.x() + STEP, self.y())
+        self.moving += 1
+        self.set_image()
+        self.collisions()
