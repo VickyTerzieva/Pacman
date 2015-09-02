@@ -76,7 +76,7 @@ def create_walls():
 
 
 def taken():
-    matrix = [[False for x in range(500)] for y in range(500)]
+    matrix = [[False for x in range(470)] for y in range(500)]
 
     for x in range(155, 293):
         for y in range(178, 268):
@@ -227,3 +227,5 @@ def taken():
             matrix[x][y] = True
 
     return matrix
+
+taken_by_walls = taken()

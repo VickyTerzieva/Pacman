@@ -1,7 +1,7 @@
 import sys
 from code.ghosts import Ghosts
 from PyQt4 import QtGui, QtCore
-from code.walls import taken
+from code.walls import taken_by_walls
 from code.direction import Direction
 from code.pac_dots import *
 from code.text import Text
@@ -12,7 +12,6 @@ GHOST_POINTS = 100
 STEP = 12
 ALL_PAC_DOTS = 262
 filename = "./file.txt"
-blocks = taken()  # TO DO
 
 
 class Pacman(QtGui.QGraphicsPixmapItem):
@@ -100,7 +99,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
     def front_blocked(self, front):
         if front[0] < 21 or front[0] > 430 or front[1] < 13 or front[1] > 465:
             return True
-        return blocks[int(front[0])][int(front[1])]
+        return taken_by_walls[int(front[0])][int(front[1])]
 
     def collisions(self):
         colliding_items = list(self.collidingItems())
