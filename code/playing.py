@@ -4,6 +4,8 @@ from code.pacman import Pacman
 from code.pacman import filename
 from code.walls import *
 from code.pac_dots import *
+from code.ghosts import Ghosts
+from code.pair import Pair
 
 
 class GameWindow(QtGui.QMainWindow):
@@ -28,6 +30,15 @@ class GameWindow(QtGui.QMainWindow):
         player = Pacman()
         player.setPos(view.width()/2-14, view.height()/2+96)
 
+        pinky = Ghosts("./resources/images/pink_down.png")
+        pinky.setPos(222, 214)
+        inky = Ghosts("./resources/images/blue_down.png")
+        inky.setPos(255, 214)
+        blinky = Ghosts("./resources/images/red_down.png")
+        blinky.setPos(178, 174)
+        clyde = Ghosts("./resources/images/orange_down.png")
+        clyde.setPos(192, 214)
+
         dots = create_dots()
         for i in range(dots.__len__()):
             scene.addItem(dots[i])
@@ -41,6 +52,10 @@ class GameWindow(QtGui.QMainWindow):
         scene.addItem(player)
         scene.addItem(player.current_lives)
         scene.addItem(player.current_score)
+        scene.addItem(blinky)
+        scene.addItem(inky)
+        scene.addItem(pinky)
+        scene.addItem(clyde)
 
         self.setCentralWidget(view)
         # QtGui.QSound.play("./resources/sounds/opening music.wav")
