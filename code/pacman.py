@@ -55,7 +55,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         front = self.front()
 
         if (front[0] < 21 or front[0] > 430) \
-                and (front[1] < 246 or front[1] > 220):
+                and (front[1] < 246 and front[1] > 220):
             self.teleport()
 
         if self.front_blocked(front) is True:
@@ -142,8 +142,8 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         file = open(filename, 'a')
         file.write("{0} {1}\n".format(name, str(self.score)))
         file.close()
-        if ok is True:
-            sys.exit()
+        #if ok is True:
+        sys.exit()
 
     def game_continue(self):
         pass
