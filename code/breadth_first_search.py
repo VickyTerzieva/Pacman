@@ -43,5 +43,6 @@ def breadth_first_search(start, goal):
         for i in range(node_neighbours.__len__()):
             if visited[node_neighbours[i].x()][node_neighbours[i].y()] \
                     is False:
+                        
                 queue.put_nowait(node_neighbours[i])
                 visited[current_node.x()][current_node.y()] = True
