@@ -5,6 +5,7 @@ from code.walls import taken_by_walls
 from code.direction import Direction
 from code.pac_dots import *
 from code.text import Text
+from code.pair import Pair
 
 PAC_DOT_POINTS = 10
 BIG_PAC_DOT_POINTS = 50
@@ -52,13 +53,13 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.move()
 
     def move(self):
-        front = self.front()
+        front_ = self.front()
 
-        if (front[0] < 21 or front[0] > 430) \
-                and (front[1] < 246 and front[1] > 220):
+        if (front_[0] < 21 or front_[0] > 430) \
+                and 220 < front_[1] < 246:
             self.teleport()
 
-        if self.front_blocked(front) is True:
+        if self.front_blocked(self, front_) is True:
             return
 
         if self.direction == Direction.UP:
@@ -96,6 +97,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         elif self.direction == Direction.RIGHT:
             return [self.x() + STEP, self.y()]
 
+    @staticmethod
     def front_blocked(self, front):
         if front[0] < 21 or front[0] > 430 or front[1] < 13 or front[1] > 465:
             return True
@@ -106,8 +108,10 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         for i in range(colliding_items.__len__()):
             if type(colliding_items[i]) is Ghosts \
                     and self.big_pac_dot_eaten is True:
-                # TO DO: make them appear with another image
-                self.scene().removeItem(colliding_items[i])
+                colliding_items[i].set_image("./resources/images/eyes.png")
+                colliding_items[i].return_home()
+                goal = Pair(self.x(), self.y())
+                colliding_items[i].chase(goal)
             elif type(colliding_items[i]) is Ghosts:
                 self.lives -= 1
                 if self.lives == 0:
@@ -124,7 +128,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
                 self.increase_points(BIG_PAC_DOT_POINTS)
                 self.scene().removeItem(colliding_items[i])
                 QtCore.QTimer.singleShot(7000, self.uneaten)
-                # TO DO: ghosts changing images again
+                self.change_ghosts("./resources/images/ghost.png")
 
     def increase_points(self, points):
         self.score += points
@@ -150,6 +154,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
 
     def uneaten(self):
         self.big_pac_dot_eaten = False
+        self.ghosts_return()
 
     def set_focus(self):
         self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable)
@@ -180,3 +185,15 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.moving += 1
         self.set_image()
         self.collisions()
+
+    def change_ghosts(self, name):
+        ghosts = list(self.scene().items())
+        for i in range(ghosts.__len__()):
+            if type(ghosts[i]) is Ghosts:
+                ghosts[i].set_image(name)
+
+    def ghosts_return(self):
+        ghosts = list(self.scene().items())
+        for i in range(ghosts.__len__()):
+            if type(ghosts[i]) is Ghosts and ghosts[i].going_home is False:
+                ghosts[i].set_image(ghosts[i].name)
