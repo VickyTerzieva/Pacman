@@ -5,24 +5,6 @@ from code.pair import Pair
 STEP = 12
 
 
-def neighbours(node):
-    neighbours_to_node = []
-    if taken_by_walls[node.first() - STEP][node.second()] is False:
-        new_node = Pair(node.first() - STEP, node.second())
-        neighbours_to_node.append(new_node)
-    if taken_by_walls[node.first() + STEP][node.second()] is False:
-        new_node = Pair(node.first() + STEP, node.second())
-        neighbours_to_node.append(new_node)
-    if taken_by_walls[node.first()][node.second() - STEP] is False:
-        new_node = Pair(node.first(), node.second() - STEP)
-        neighbours_to_node.append(new_node)
-    if taken_by_walls[node.first()][node.second() + STEP] is False:
-        new_node = Pair(node.first(), node.second() + STEP)
-        neighbours_to_node.append(new_node)
-
-    return neighbours_to_node
-
-
 def breadth_first_search(start, goal):
     visited = [[False for x in range(500)] for y in range(500)]
     dad = [[None for x in range(500)] for y in range(500)]
@@ -31,7 +13,6 @@ def breadth_first_search(start, goal):
     dad[start.first()][start.second()] = start
     current_node = start
     neighbours_ = neighbours(current_node)
-
     for i in range(neighbours_.__len__()):
         if visited[neighbours_[i].first()][neighbours_[i].second()] \
                 is False:
@@ -46,7 +27,6 @@ def breadth_first_search(start, goal):
                     <= goal.second() + 10:
         current_node = queue.get_nowait()
         neighbours_ = neighbours(current_node)
-
         for i in range(neighbours_.__len__()):
             if visited[neighbours_[i].first()][neighbours_[i].second()] \
                     is False:
@@ -63,3 +43,29 @@ def breadth_first_search(start, goal):
         current_node = dad[current_node.first()][current_node.second()]
 
     return path
+
+
+def neighbours(node):
+    neighbours_to_node = []
+    if is_in_range(node.first() - STEP, node.second()):
+        if taken_by_walls[node.first() - STEP][node.second()] is False:
+            new_node = Pair(node.first() - STEP, node.second())
+            neighbours_to_node.append(new_node)
+    if is_in_range(node.first() + STEP, node.second()):
+        if taken_by_walls[node.first() + STEP][node.second()] is False:
+            new_node = Pair(node.first() + STEP, node.second())
+            neighbours_to_node.append(new_node)
+    if is_in_range(node.first(), node.second() - STEP):
+        if taken_by_walls[node.first()][node.second() - STEP] is False:
+            new_node = Pair(node.first(), node.second() - STEP)
+            neighbours_to_node.append(new_node)
+    if is_in_range(node.first(), node.second() + STEP):
+        if taken_by_walls[node.first()][node.second() + STEP] is False:
+            new_node = Pair(node.first(), node.second() + STEP)
+            neighbours_to_node.append(new_node)
+
+    return neighbours_to_node
+
+
+def is_in_range(x, y):
+    return 0 <= x <= 470 and 0 <= y <= 500

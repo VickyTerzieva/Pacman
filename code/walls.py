@@ -7,7 +7,6 @@ class Walls(QtGui.QGraphicsPixmapItem):
         self.setPixmap(QtGui.QPixmap(name))
 
 
-# think about obtimization if there is enough time
 def create_walls():
     obstacles = []
 
@@ -76,7 +75,17 @@ def create_walls():
 
 
 def taken():
-    matrix = [[False for x in range(470)] for y in range(500)]
+    matrix = []
+    new = []
+    for i in range(470):
+        for j in range(500):
+            new.append(False)
+        matrix.append(new)
+        new = []
+
+    for x in range(470):
+        for y in range(500):
+            matrix[x][y] = False
 
     for x in range(155, 293):
         for y in range(178, 268):
