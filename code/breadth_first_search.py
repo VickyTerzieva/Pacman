@@ -40,9 +40,10 @@ def breadth_first_search(start, goal):
                 = True
             dad[neighbours_[i].first()][neighbours_[i].second()] \
                 = current_node
-    count = 0
-    while not current_node.first() == goal.first() \
-            or not current_node.second() == goal.second():
+
+    while not goal.first() - 10 <= current_node.first() <= goal.first() + 10 \
+            or not goal.second() - 10 <= current_node.second() \
+                    <= goal.second() + 10:
         current_node = queue.get_nowait()
         neighbours_ = neighbours(current_node)
 

@@ -82,6 +82,10 @@ def taken():
         for y in range(178, 268):
             matrix[x][y] = True
 
+    for x in range(189, 259):
+        for y in range(213, 232):
+            matrix[x][y] = False
+
     for x in range(28, 100):
         for y in range(19, 75):
             matrix[x][y] = True
