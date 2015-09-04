@@ -6,6 +6,7 @@ from code.walls import *
 from code.pac_dots import *
 from code.ghosts import Ghosts
 from code.pair import Pair
+import functools
 
 
 class GameWindow(QtGui.QMainWindow):
@@ -30,14 +31,14 @@ class GameWindow(QtGui.QMainWindow):
         player = Pacman()
         player.setPos(view.width()/2-14, view.height()/2+96)
 
-        pinky = Ghosts("./resources/images/pink_down.png")
-        pinky.setPos(222, 214)
-        inky = Ghosts("./resources/images/blue_down.png")
-        inky.setPos(255, 214)
-        blinky = Ghosts("./resources/images/red_down.png")
-        blinky.setPos(178, 174)
-        clyde = Ghosts("./resources/images/orange_down.png")
-        clyde.setPos(192, 214)
+        pinky = Ghosts("./resources/images/pink_down.png",
+                       in_home=True, x=222, y=214, time=100)
+        inky = Ghosts("./resources/images/blue_down.png",
+                      in_home=True, x=254, y=214, time=5000)
+        blinky = Ghosts("./resources/images/red_down.png",
+                        in_home=False, x=178, y=174, time=0)
+        clyde = Ghosts("./resources/images/orange_down.png",
+                       in_home=True, x=192, y=214, time=10000)
 
         dots = create_dots()
         for i in range(dots.__len__()):
@@ -61,6 +62,11 @@ class GameWindow(QtGui.QMainWindow):
         # QtGui.QSound.play("./resources/sounds/opening music.wav")
         # !! 4000
         QtCore.QTimer.singleShot(0, player.set_focus)
+        func = functools.partial(self.set_paths_to, player, blinky,
+                                 pinky, inky, clyde)
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(func)
+        self.timer.start(500)
 
     def main_menu(self):
         btn = QtGui.QPushButton("Play", self)
@@ -114,6 +120,12 @@ class GameWindow(QtGui.QMainWindow):
         else:
             event.ignore()
 
+    @staticmethod
+    def set_paths_to(player, *args):
+        goal = Pair(player.pos().x(), player.pos().y())
+        for ghost in args:
+            if ghost.going_home is False and ghost.in_home is False:
+                ghost.chase(goal)
 
 app = QtGui.QApplication(sys.argv)
 game = GameWindow()
