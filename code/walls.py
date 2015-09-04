@@ -235,6 +235,22 @@ def taken():
         for y in range(132, 220):
             matrix[x][y] = True
 
+    for x in range(21):
+        for y in range(500):
+            matrix[x][y] = True
+
+    for x in range(431, 470):
+        for y in range(500):
+            matrix[x][y] = True
+
+    for x in range(470):
+        for y in range(13):
+            matrix[x][y] = True
+
+    for x in range(470):
+        for y in range(466, 500):
+            matrix[x][y] = True
+
     for x in range(397, 446):
         for y in range(371, 412):
             matrix[x][y] = True
