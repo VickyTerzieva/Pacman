@@ -1,4 +1,5 @@
 import sys
+import functools
 from code.ghosts import Ghosts
 from PyQt4 import QtGui, QtCore
 from code.walls import taken_by_walls
@@ -6,6 +7,7 @@ from code.direction import Direction
 from code.pac_dots import *
 from code.text import Text
 from code.pair import Pair
+
 
 PAC_DOT_POINTS = 10
 BIG_PAC_DOT_POINTS = 50
@@ -55,11 +57,11 @@ class Pacman(QtGui.QGraphicsPixmapItem):
     def move(self):
         front_ = self.front()
 
-        if (front_[0] < 21 or front_[0] > 430) \
+        if front_.__len__() > 0 and (front_[0] < 21 or front_[0] > 430) \
                 and 220 < front_[1] < 246:
             self.teleport()
 
-        if self.front_blocked(self, front_) is True:
+        if self.front_blocked(front_) is True:
             return
 
         if self.direction == Direction.UP:
@@ -96,9 +98,13 @@ class Pacman(QtGui.QGraphicsPixmapItem):
             return [self.x() - STEP, self.y()]
         elif self.direction == Direction.RIGHT:
             return [self.x() + STEP, self.y()]
+        else:
+            return []
 
     @staticmethod
-    def front_blocked(self, front):
+    def front_blocked(front):
+        if front.__len__() == 0:
+            return
         if front[0] < 21 or front[0] > 430 or front[1] < 13 or front[1] > 465:
             return True
         return taken_by_walls[int(front[0])][int(front[1])]
@@ -110,8 +116,11 @@ class Pacman(QtGui.QGraphicsPixmapItem):
                     and self.big_pac_dot_eaten is True:
                 colliding_items[i].set_image("./resources/images/eyes.png")
                 colliding_items[i].return_home()
-                goal = Pair(self.x(), self.y())
-                colliding_items[i].chase(goal)
+                self.ghosts_eaten += 1
+                if colliding_items[i].eaten is False:
+                    # display points
+                    self.increase_points(GHOST_POINTS * self.ghosts_eaten)
+                colliding_items[i].eaten = True
             elif type(colliding_items[i]) is Ghosts:
                 self.lives -= 1
                 if self.lives == 0:
@@ -122,11 +131,17 @@ class Pacman(QtGui.QGraphicsPixmapItem):
                 self.pac_dots += 1
                 self.increase_points(PAC_DOT_POINTS)
                 self.scene().removeItem(colliding_items[i])
+                if self.pac_dots == ALL_PAC_DOTS:
+                    self.level_up()
+                    return
             elif type(colliding_items[i]) is BigPacDots:
                 self.pac_dots += 1
-                self.big_pac_dot_eaten = True
                 self.increase_points(BIG_PAC_DOT_POINTS)
                 self.scene().removeItem(colliding_items[i])
+                if self.pac_dots == ALL_PAC_DOTS:
+                    self.level_up()
+                    return
+                self.big_pac_dot_eaten = True
                 QtCore.QTimer.singleShot(7000, self.uneaten)
                 self.change_ghosts("./resources/images/ghost.png")
 
@@ -135,30 +150,45 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.current_score.show_on_screen("Score: " + str(self.score))
 
     def level_up(self):
-        if self.pac_dots == ALL_PAC_DOTS:
-            self.level += 1
-            self.pac_dots = 0
-            self.game_continue()
+        self.level += 1
+        self.pac_dots = 0
+        self.new_level()
 
     def game_over(self):
         dialog = QtGui.QInputDialog()
         name, ok = dialog.getText(dialog, "GAME OVER", "Input your name:")
-        file = open(filename, 'a')
-        file.write("{0} {1}\n".format(name, str(self.score)))
-        file.close()
-        #if ok is True:
+        if ok is True:
+            file = open(filename, 'a')
+            file.write("{0} {1}\n".format(name, str(self.score)))
+            file.close()
         sys.exit()
 
-    def game_continue(self):
+    def new_level(self):
         pass
 
+    def game_continue(self):
+        objects = list(self.scene().items())
+        pics = self.create_pacman_dying()
+        for i in range(objects.__len__()):
+            if type(objects[i]) is Ghosts or type(objects[i]) is Pacman:
+                self.scene().removeItem(objects[i])
+        func = functools.partial(self.show_again, objects)
+        QtCore.QTimer.singleShot(100, func)
+
+    def show_again(self, objects):
+        for object_ in objects:
+            if type(object_) is Ghosts:
+                self.scene().addItem(object_)
+                object_.setPos(object_.initial_x, object_.initial_y)
+
     def uneaten(self):
+        self.ghosts_eaten = 0
         self.big_pac_dot_eaten = False
         self.ghosts_return()
 
     def set_focus(self):
         self.setFlag(QtGui.QGraphicsItem.ItemIsFocusable)
-        super(Pacman, self).setFocus()
+        self.setFocus()
 
     def set_image(self):
         if self.moving % 2 == 1:
@@ -191,9 +221,46 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         for i in range(ghosts.__len__()):
             if type(ghosts[i]) is Ghosts:
                 ghosts[i].set_image(name)
+                ghosts[i].eaten = False
 
     def ghosts_return(self):
         ghosts = list(self.scene().items())
         for i in range(ghosts.__len__()):
             if type(ghosts[i]) is Ghosts and ghosts[i].going_home is False:
                 ghosts[i].set_image(ghosts[i].name)
+
+    def create_pacman_dying(self):
+        pics = []
+        name = "./resources/images/pacman_dying1.png"
+        pic1 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic1.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying2.png"
+        pic2 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic2.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying3.png"
+        pic3 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic3.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying4.png"
+        pic4= QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic4.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying5.png"
+        pic5 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic5.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying6.png"
+        pic6 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic6.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying7.png"
+        pic7 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic7.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying8.png"
+        pic8 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic8.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying9.png"
+        pic9 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic9.setPos(self.x(), self.y())
+        name = "./resources/images/pacman_dying10.png"
+        pic10 = QtGui.QGraphicsPixmapItem(QtGui.QPixmap(name))
+        pic10.setPos(self.x(), self.y())
+        pics.extend([pic1, pic2, pic3, pic4, pic5,
+                     pic6, pic7, pic8, pic9, pic10])
+        return pics
