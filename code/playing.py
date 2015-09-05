@@ -30,13 +30,13 @@ class GameWindow(QtGui.QMainWindow):
 
         player = Pacman(view.width()/2-14, view.height()/2+96, scene)
         pinky = Ghosts("./resources/images/pink_down.png",
-                       in_home=True, x=222, y=214, time=100)
+                       in_home=True, x=222, y=214, time=4200)
         inky = Ghosts("./resources/images/blue_down.png",
-                      in_home=True, x=254, y=214, time=5000)
+                      in_home=True, x=254, y=214, time=9000)
         blinky = Ghosts("./resources/images/red_down.png",
                         in_home=False, x=178, y=174, time=0)
         clyde = Ghosts("./resources/images/orange_down.png",
-                       in_home=True, x=192, y=214, time=10000)
+                       in_home=True, x=192, y=214, time=14000)
 
         dots = create_dots()
         for i in range(dots.__len__()):
@@ -50,15 +50,11 @@ class GameWindow(QtGui.QMainWindow):
                        player, player.current_score, player.current_lives)
 
         self.setCentralWidget(view)
-        # QtGui.QSound.play("./resources/sounds/opening music.wav")
-        # !! 4000
-        QtCore.QTimer.singleShot(0, player.set_focus)
-        func = functools.partial(self.set_paths_to,
-                                 player, blinky,
+        QtGui.QSound.play("./resources/sounds/opening music.wav")
+        QtCore.QTimer.singleShot(4000, player.set_focus)
+        func = functools.partial(self.initialize_chasing, player, blinky,
                                  pinky, inky, clyde)
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(func)
-        self.timer.start(500)
+        QtCore.QTimer.singleShot(3500, func)
 
     def main_menu(self):
         btn = QtGui.QPushButton("Play", self)
@@ -124,6 +120,13 @@ class GameWindow(QtGui.QMainWindow):
         scene.setBackgroundBrush(name)
         for item in args:
             scene.addItem(item)
+
+    def initialize_chasing(self, player, *args):
+        self.timer = QtCore.QTimer()
+        func = functools.partial(self.set_paths_to,
+                                 player, *args)
+        self.timer.timeout.connect(func)
+        self.timer.start(500)
 
 app = QtGui.QApplication(sys.argv)
 game = GameWindow()

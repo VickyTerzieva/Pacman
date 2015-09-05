@@ -54,19 +54,6 @@ def breadth_first_search(start, goal):
 def neighbours(node):
     neighbours_to_node = []
 
-    # fix
-    '''
-    if node.first() < 13 and 220 < node.second() < 246:
-        neighbours_to_node.append(Pair(466, node.second()))
-        neighbours_to_node.append(Pair(node.first() + STEP, node.second()))
-        return neighbours_to_node
-
-    if node.first() > 458 and 220 < node.second() < 246:
-        neighbours_to_node.append(Pair(-10, node.second()))
-        neighbours_to_node.append(Pair(node.first() - STEP, node.second()))
-        return neighbours_to_node
-    '''
-
     if is_in_range(node.first() - STEP, node.second()):
         if taken_by_walls[node.first() - STEP][node.second()] is False:
             new_node = Pair(node.first() - STEP, node.second())
