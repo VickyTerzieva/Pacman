@@ -28,9 +28,7 @@ class GameWindow(QtGui.QMainWindow):
         view.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         view.show()
 
-        player = Pacman()
-        player.setPos(view.width()/2-14, view.height()/2+96)
-
+        player = Pacman(view.width()/2-14, view.height()/2+96, scene)
         pinky = Ghosts("./resources/images/pink_down.png",
                        in_home=True, x=222, y=214, time=100)
         inky = Ghosts("./resources/images/blue_down.png",
@@ -48,21 +46,15 @@ class GameWindow(QtGui.QMainWindow):
         for i in range(obstacles.__len__()):
             scene.addItem(obstacles[i])
 
-        name = QtGui.QBrush(QtGui.QImage("./resources/images/background.png"))
-        scene.setBackgroundBrush(name)
-        scene.addItem(player)
-        scene.addItem(player.current_lives)
-        scene.addItem(player.current_score)
-        scene.addItem(blinky)
-        scene.addItem(inky)
-        scene.addItem(pinky)
-        scene.addItem(clyde)
+        self.set_scene(scene, blinky, pinky, inky, clyde,
+                       player, player.current_score, player.current_lives)
 
         self.setCentralWidget(view)
         # QtGui.QSound.play("./resources/sounds/opening music.wav")
         # !! 4000
         QtCore.QTimer.singleShot(0, player.set_focus)
-        func = functools.partial(self.set_paths_to, player, blinky,
+        func = functools.partial(self.set_paths_to,
+                                 player, blinky,
                                  pinky, inky, clyde)
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(func)
@@ -101,7 +93,6 @@ class GameWindow(QtGui.QMainWindow):
            or event.key() == QtCore.Qt.Key_Q:
             self.close_program()
 
-    # fix this if possible!!
     def close_program(self):
         option = QtGui.QMessageBox.question(self, 'Close',
                                             "Do you really want to quit?",
@@ -124,8 +115,15 @@ class GameWindow(QtGui.QMainWindow):
     def set_paths_to(player, *args):
         goal = Pair(player.pos().x(), player.pos().y())
         for ghost in args:
-            if ghost.going_home is False and ghost.in_home is False:
+            if ghost.going_home is False:
                 ghost.chase(goal)
+
+    @staticmethod
+    def set_scene(scene, *args):
+        name = QtGui.QBrush(QtGui.QImage("./resources/images/background.png"))
+        scene.setBackgroundBrush(name)
+        for item in args:
+            scene.addItem(item)
 
 app = QtGui.QApplication(sys.argv)
 game = GameWindow()

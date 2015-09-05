@@ -6,7 +6,6 @@ from code.walls import taken_by_walls
 from code.direction import Direction
 from code.pac_dots import *
 from code.text import Text
-from code.pair import Pair
 
 
 PAC_DOT_POINTS = 10
@@ -18,7 +17,7 @@ filename = "./file.txt"
 
 
 class Pacman(QtGui.QGraphicsPixmapItem):
-    def __init__(self):
+    def __init__(self, x, y, scene):
         super(Pacman, self).__init__()
 
         self.pac_dots = 0
@@ -29,6 +28,11 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.direction = None
         self.ghosts_eaten = 0
         self.moving = 0
+        self.initial_x = x
+        self.initial_y = y
+        self.name = "./resources/images/pacman_left.png"
+        self.scene = QtGui.QGraphicsScene()
+        self.scene = scene
 
         self.current_lives = Text("Lives: "+str(self.lives))
         self.current_lives.upgrade(QtCore.Qt.red,
@@ -38,7 +42,8 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.current_score.upgrade(QtCore.Qt.blue,
                                    QtGui.QFont("helvetica", 18), 0, 500)
 
-        self.setPixmap(QtGui.QPixmap("./resources/images/pacman_left.png"))
+        self.setPixmap(QtGui.QPixmap(self.name))
+        self.setPos(x, y)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Up:
@@ -123,6 +128,7 @@ class Pacman(QtGui.QGraphicsPixmapItem):
                 colliding_items[i].eaten = True
             elif type(colliding_items[i]) is Ghosts:
                 self.lives -= 1
+                self.current_lives.show_on_screen("Lives: " + str(self.lives))
                 if self.lives == 0:
                     self.game_over()
                 else:
@@ -130,14 +136,14 @@ class Pacman(QtGui.QGraphicsPixmapItem):
             elif type(colliding_items[i]) is PacDot:
                 self.pac_dots += 1
                 self.increase_points(PAC_DOT_POINTS)
-                self.scene().removeItem(colliding_items[i])
+                self.scene.removeItem(colliding_items[i])
                 if self.pac_dots == ALL_PAC_DOTS:
                     self.level_up()
                     return
             elif type(colliding_items[i]) is BigPacDots:
                 self.pac_dots += 1
                 self.increase_points(BIG_PAC_DOT_POINTS)
-                self.scene().removeItem(colliding_items[i])
+                self.scene.removeItem(colliding_items[i])
                 if self.pac_dots == ALL_PAC_DOTS:
                     self.level_up()
                     return
@@ -164,22 +170,42 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         sys.exit()
 
     def new_level(self):
-        pass
+        objects = list(self.scene.items())
+        for object_ in objects:
+            if not type(object_) == Text:
+                self.scene.removeItem(object_)
+        func = functools.partial(self.show_everything, objects)
+        QtCore.QTimer.singleShot(1000, func)
 
     def game_continue(self):
-        objects = list(self.scene().items())
-        pics = self.create_pacman_dying()
-        for i in range(objects.__len__()):
-            if type(objects[i]) is Ghosts or type(objects[i]) is Pacman:
-                self.scene().removeItem(objects[i])
+        objects = list(self.scene.items())
+        dying = self.create_pacman_dying()
+        for object_ in objects:
+            if type(object_) is Ghosts or type(object_) is Pacman:
+                self.scene.removeItem(object_)
         func = functools.partial(self.show_again, objects)
-        QtCore.QTimer.singleShot(100, func)
+        QtCore.QTimer.singleShot(1000, func)
 
     def show_again(self, objects):
         for object_ in objects:
             if type(object_) is Ghosts:
-                self.scene().addItem(object_)
+                self.scene.addItem(object_)
                 object_.setPos(object_.initial_x, object_.initial_y)
+                QtCore.QTimer.singleShot(object_.time, object_.set_free)
+            if type(object_) is Pacman:
+                object_.setPos(object_.initial_x, object_.initial_y)
+                self.scene.addItem(object_)
+                self.setPixmap(QtGui.QPixmap(self.name))
+                self.setFocus()
+
+    def show_again_dots(self):
+        dots = create_dots()
+        for i in range(dots.__len__()):
+            self.scene.addItem(dots[i])
+
+    def show_everything(self, objects):
+        self.show_again(objects)
+        self.show_again_dots()
 
     def uneaten(self):
         self.ghosts_eaten = 0
@@ -217,14 +243,14 @@ class Pacman(QtGui.QGraphicsPixmapItem):
         self.collisions()
 
     def change_ghosts(self, name):
-        ghosts = list(self.scene().items())
+        ghosts = list(self.scene.items())
         for i in range(ghosts.__len__()):
             if type(ghosts[i]) is Ghosts:
                 ghosts[i].set_image(name)
                 ghosts[i].eaten = False
 
     def ghosts_return(self):
-        ghosts = list(self.scene().items())
+        ghosts = list(self.scene.items())
         for i in range(ghosts.__len__()):
             if type(ghosts[i]) is Ghosts and ghosts[i].going_home is False:
                 ghosts[i].set_image(ghosts[i].name)
