@@ -126,7 +126,8 @@ class Pacman(QtGui.QGraphicsPixmapItem):
                 if colliding_items[i].eaten is False:
                     self.increase_points(GHOST_POINTS * self.ghosts_eaten)
                 colliding_items[i].eaten = True
-            elif type(colliding_items[i]) is Ghosts:
+            elif type(colliding_items[i]) is Ghosts \
+                    and colliding_items[i].going_home is False:
                 self.lives -= 1
                 self.current_lives.show_on_screen("Lives: " + str(self.lives))
                 if self.lives == 0:
