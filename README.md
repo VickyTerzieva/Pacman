@@ -1,3 +1,3 @@
 # Pacman
 
-The project repsresents the classic Pacman game.
+The project represents the classic Pacman game.
